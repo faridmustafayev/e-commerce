@@ -1,48 +1,93 @@
 package com.rustam.e_commerce.dao.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.rustam.e_commerce.dao.entity.campaign.Campaign;
-import jakarta.persistence.*;
-import lombok.*;
+import com.rustam.e_commerce.dao.entity.user.BaseUser;
+import com.rustam.e_commerce.model.Status;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static jakarta.persistence.CascadeType.MERGE;
+import static jakarta.persistence.CascadeType.PERSIST;
+import static jakarta.persistence.EnumType.STRING;
+import static jakarta.persistence.FetchType.LAZY;
+import static jakarta.persistence.GenerationType.IDENTITY;
+import static lombok.AccessLevel.PRIVATE;
 
 @Entity
 @Table(name = "products")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(of = "id")
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = PRIVATE)
 @Builder
 public class Product {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long productId;
+    @GeneratedValue(strategy = IDENTITY)
+    Long id;
 
-    private String productName;
+    String productName;
 
-    private String description;
+    String description;
 
-    private Integer quantity;
-    private double price;
-    private double discount;
-    private double specialPrice;
-    private String userId;
-    private String imageUrl;
-    private String videoUrl;
+    Integer quantity;
 
-    @JoinColumn(name = "category_id")
-    private Long categoryId;
+    BigDecimal price;
 
-    @ManyToOne
-    @JoinColumn(name = "campaign_id")
-    private Campaign campaign;
+    BigDecimal discount;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    @ToString.Exclude // Sonsuz rekursiyanın qarşısını alır
-    private List<CartItem> products = new ArrayList<>();
+    BigDecimal specialPrice;
 
-    @OneToMany(mappedBy = "product", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    @ToString.Exclude // Sonsuz rekursiyanın qarşısını alır
-    private List<OrderItem> orderItems = new ArrayList<>();
+    String imageUrl;
+
+    String videoUrl;
+
+    @Enumerated(STRING)
+    Status status;
+
+    @CreationTimestamp
+    LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    LocalDateTime updatedAt;
+
+    @ManyToOne(fetch = LAZY, cascade = MERGE)
+    @JsonBackReference
+    Category category;
+
+    @ManyToOne(fetch = LAZY, cascade = MERGE)
+    @JsonBackReference
+    BaseUser user;
+
+    @ManyToOne(fetch = LAZY, cascade = MERGE)
+    @JsonBackReference
+    Campaign campaign;
+
+    @OneToMany(mappedBy = "product", cascade = {PERSIST, MERGE})
+    @JsonBackReference
+    List<CartItem> products;
+
+    @OneToMany(mappedBy = "product", cascade = {PERSIST, MERGE})
+    @JsonBackReference
+    List<OrderItem> orderItems;
 }

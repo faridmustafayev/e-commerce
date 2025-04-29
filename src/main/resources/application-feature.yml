@@ -12,6 +12,9 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
+  liquibase:
+    change-log: classpath:liquibase/changelog-master.yml
+
   data:
     redis:
       host: localhost

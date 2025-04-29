@@ -1,37 +1,55 @@
 package com.rustam.e_commerce.dao.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+import java.math.BigDecimal;
+
+import static jakarta.persistence.CascadeType.MERGE;
+import static jakarta.persistence.FetchType.LAZY;
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Table(name = "cart_items")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(of = "id")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CartItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = IDENTITY)
+    Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "cart_id")
-    @JsonIgnore
-    @ToString.Exclude // Exclude cart to avoid recursion
-    private Cart cart;
+    String productName;
+    Integer quantity;
+    BigDecimal price;
+    BigDecimal totalPrice;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "product_id", nullable = false)
-    @JsonIgnore
-    @ToString.Exclude // Sonsuz rekursiyanın qarşısını alır
-    private Product product;
+    @ManyToOne(fetch = LAZY, cascade = MERGE)
+    @JsonBackReference
+    Cart cart;
 
-    private String productName;
-    private Integer quantity;
-    private double price;
-    private double totalPrice;
+    @ManyToOne(fetch = LAZY, cascade = MERGE)
+    @JsonBackReference
+    Product product;
+
     public void calculateTotalPrice() {
-        this.totalPrice = this.quantity * this.price;
+        if (this.price != null && this.quantity != null) {
+            this.totalPrice = this.price.multiply(new BigDecimal(this.quantity));
+        }
     }
+
 }

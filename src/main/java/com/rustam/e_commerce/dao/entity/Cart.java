@@ -1,32 +1,49 @@
 package com.rustam.e_commerce.dao.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.rustam.e_commerce.dao.entity.user.User;
-import jakarta.persistence.*;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+
+import static jakarta.persistence.CascadeType.MERGE;
+import static jakarta.persistence.CascadeType.PERSIST;
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Table(name = "carts")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(of = "id")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class Cart {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     @Column(name = "user_id")
     private String user;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    @ToString.Exclude // Exclude cartItems to avoid recursion
-    private List<CartItem> cartItems = new ArrayList<>();
+    private BigDecimal totalPrice;
 
-    private double totalPrice;
+    @OneToMany(mappedBy = "cart", cascade = {PERSIST, MERGE})
+    @JsonBackReference
+    @ToString.Exclude
+    @Builder.Default
+    private List<CartItem> cartItems = new ArrayList<>();
 }
